@@ -5,12 +5,22 @@ import { createClient } from "@libsql/client";
 import jwt from "jsonwebtoken";
 
 const PORT = parseInt(process.env.PORT || "1234", 10);
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:3000").split(",");
+
+// Validate required environment variables
+const COLLAB_JWT_SECRET = process.env.COLLAB_JWT_SECRET;
+if (!COLLAB_JWT_SECRET) {
+  throw new Error("COLLAB_JWT_SECRET environment variable must be set");
+}
+
+const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL;
+if (!TURSO_DATABASE_URL) {
+  throw new Error("TURSO_DATABASE_URL environment variable must be set");
+}
 
 // Turso database client
 const db = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
+  url: TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
@@ -46,7 +56,7 @@ const server = Server.configure({
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as {
+      const decoded = jwt.verify(token, COLLAB_JWT_SECRET) as {
         userId: string;
         userName: string;
         userColor: string;
